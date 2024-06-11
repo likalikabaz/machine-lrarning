@@ -1,0 +1,57 @@
+# import random
+# import torch
+# # import torch.nn as nn
+ import torch.optim as optim
+ from sklearn.datasets import load_boston
+ boston = load_boston()
+ 
+ # parameters
+ w = torch.tensor([ random.uniform(0, 1) ], requires_grad=True)
+ b = torch.tensor([ random.uniform(0, 1) ], requires_grad=True)
+ 
+
+ w2 = torch.tensor([ random.uniform(0, 1) ], requires_grad=True)
+ w3 = torch.tensor([ random.uniform(0, 1) ], requires_grad=True)
+ b2 = torch.tensor([ random.uniform(0, 1) ], requires_grad=True)
+
+ # traning set (x, y)
+ x = torch.tensor(boston.data[:,-1], dtype=torch.float32)
+ y = torch.tensor(boston.target, dtype=torch.float32)
+ 
+ for i in range(500):
+ 
+     # y_pred = w2 * x ** 2 + w * x + b 
+     y_pred = w * x + b
+     y_pred = torch.sigmoid(
+         w * torch.sigmoid(
+             w2 * x + b2 
+         ) + b
+     ) 
+     
+     loss = torch.mean( (y_pred - y)**2 )
+     loss.backward()
+     
+     lr = 0.0005      # learning rate
+     
+     # adjuct parameters 
+     # w3.data -= lr * w3.grad.data
+     # w2.data -= lr * w2.grad.data
+     # b2.data -= lr * b2.grad.data
+     w.data -= lr * w.grad.data
+     b.data -= lr * b.grad.data
+     
+     # zero gradients
+     # w3.grad.data.zero_()
+     # w2.grad.data.zero_()
+     # b2.grad.data.zero_()
+     w.grad.data.zero_()
+     b.grad.data.zero_()
+     
+     # the rest of code is just bells and whistles
+     if (i + 1) % 25 == 0:
+         print(i, x.data[0].numpy(), y.data[0].numpy(), y_pred[0].data.numpy())
+         print("loss = ", loss.data.numpy())
+         # if loss.data.numpy() < 0.5:
+         if loss.data.numpy() < 0.00005:
+             print("Done!")
+             break

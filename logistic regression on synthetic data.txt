@@ -1,0 +1,65 @@
+# logistic regression on synthetic data
+ 
+ import numpy as np
+ # import torch
+ # from torch import nn
+ from sklearn.datasets import make_classification
+ from sklearn.model_selection import train_test_split
+ # import torch.nn.functional as F
+ # import matplotlib.pyplot as plt
+ 
+ X, y = make_classification(n_samples=7000, n_features=20, n_informative=5, n_redundant=2,
+                            n_repeated=0, scale=None, shift=None, shuffle=False, class_sep=0.5, 
+                            random_state=40)
+ 
+ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
+ 
+ N = 20
+  model = nn.Sequential()
+ 
+ # y_pred = sigmoid( w1 x1 + w2 x2 + w3 x3 + w4 x4 + w5 x5  + bias )
+ # add first "dense" layer with 784 input units and 1 output unit. 
+ model.add_module('l1', nn.Linear(N, 1))
+ 
+ model.add_module('l2', nn.Sigmoid())
+ # print("Weight shapes:", [w.shape for w in model.parameters()])
+ 
+ # create dummy data with 3 samples and N features
+ samples = len(X_train)
+ 
+ x = torch.tensor(X_train[:samples], dtype=torch.float32)
+ y = torch.tensor(y_train[:samples], dtype=torch.float32)
+ 
+ # compute outputs given inputs, both are variables
+ opt = torch.optim.RMSprop(model.parameters(), lr=0.01)
+
+ while True:
+     y_pred = model(x)[:, 0] 
+     # print("y", y)
+     # print("y_predicted", y_predicted) # display what we've got
+ 
+     crossentropy = F.binary_cross_entropy(y_pred, y, reduction='none')
+     loss = crossentropy.mean()
+     print("loss", loss)
+     if loss.item() <= 5:
+         break
+ 
+     # here's how it's used:
+     loss.backward()      # add new gradients
+     opt.step()           # change weights
+     opt.zero_grad()      # clear gradients
+ 
+     # print(*model.parameters())
+
+ from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, ConfusionMatrixDisplay    
+ accuracy = accuracy_score(y_train, y_pred)
+ print("Accuracy:", accuracy)    
+
+ y_predicted = model(x)[:, 0] 
+ # print("y", y)
+ print("y_predicted", y_predicted) # display what we've got
+ 
+ crossentropy = F.binary_cross_entropy(y_predicted, y, reduction='none')
+ loss = crossentropy.mean()
+ print("loss", loss)
+exit(0)
